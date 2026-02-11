@@ -20,7 +20,7 @@ Angular, Vue) or mobile application.
 
 ## ⚙️ Tech Stack
 
--   Java 17 (or 11+)
+-   Java 17
 -   Spring Boot
 -   Spring Web
 -   Spring Data JPA
