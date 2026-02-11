@@ -1,0 +1,3 @@
+GET http://localhost:8080/rest/api/task/list?pageNumber=1&pageSize=6
+Accept: application/json
+
