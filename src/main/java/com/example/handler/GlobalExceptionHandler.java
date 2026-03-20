@@ -3,6 +3,7 @@ package com.example.handler;
 import java.util.*;
 import com.example.entity.ApiError;
 import com.example.entity.RootEntity;
+import com.example.exception.UserAlreadyExistsException;
 import org.springframework.http.HttpStatus;
 import jakarta.validation.ConstraintViolation;
 import com.example.exception.UserNotFoundException;
@@ -74,21 +75,28 @@ public class GlobalExceptionHandler {
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public RootEntity<ApiError> handleTaskNotFoundException(TaskNotFoundException ex, WebRequest request){
-        return RootEntity.error(createApiError(ex,request),HttpStatus.NOT_FOUND);
+        return RootEntity.error(createApiError(ex.getMessage(),request),HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public RootEntity<ApiError> handleUserNotFoundException(UserNotFoundException ex, WebRequest request){
-        return RootEntity.error(createApiError(ex,request),HttpStatus.NOT_FOUND);
+        return RootEntity.error(createApiError(ex.getMessage(),request),HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(TaskUserMismatchException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.CONFLICT)
     public RootEntity<ApiError> handleTaskUserMismatchException(TaskUserMismatchException ex, WebRequest request){
-        return RootEntity.error(createApiError(ex,request),HttpStatus.CONFLICT);
+        return RootEntity.error(createApiError(ex.getMessage(),request),HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public RootEntity<ApiError> handleUserAlreadyExistsException(UserAlreadyExistsException ex, WebRequest request){
+        return RootEntity.error(createApiError(ex.getMessage(),request),HttpStatus.CONFLICT);
     }
 
 }

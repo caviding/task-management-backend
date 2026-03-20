@@ -3,13 +3,13 @@ package com.example.service.impl;
 import java.util.List;
 import com.example.entity.User;
 import com.example.entity.Task;
-import com.example.dto.TaskDto;
-import com.example.dto.TaskDtoUI;
 import com.example.Enum.TaskStatus;
-import com.example.dto.TaskUpdateDto;
 import com.example.mapper.TaskMapper;
 import com.example.service.ITaskService;
+import com.example.dto.response.TaskResponseDto;
+import com.example.dto.request.TaskRequestDto;
 import org.springframework.data.domain.Page;
+import com.example.dto.request.TaskUpdateDto;
 import com.example.repository.UserRepository;
 import com.example.repository.TaskRepository;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,6 @@ import com.example.exception.TaskUserMismatchException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
 @Service
 public class TaskServiceImpl implements ITaskService {
 
@@ -32,21 +31,24 @@ public class TaskServiceImpl implements ITaskService {
     private UserRepository userRepository;
 
     @Override
-    public TaskDto createTask(TaskDtoUI taskDtoUI) {
-        if (!userRepository.existsById(taskDtoUI.getUserId())){
+    public TaskResponseDto createTask(TaskRequestDto taskRequestDto) {
+        if (!userRepository.existsById(taskRequestDto.getUserId())){
             throw new UserNotFoundException("User not found !!");
         }else {
-            Task task = TaskMapper.toEntity(taskDtoUI);
-            List<Task> taskList = userRepository.findById(taskDtoUI.getUserId()).get().getTasks();
+            Task task = TaskMapper.toEntity(taskRequestDto);
+            List<Task> taskList = userRepository.findById(taskRequestDto.getUserId()).get().getTasks();
             taskList.add(task);
-            userRepository.findById(taskDtoUI.getUserId()).get().setTasks(taskList);
+            userRepository.findById(taskRequestDto.getUserId()).get().setTasks(taskList);
             taskRepository.save(task);
             return TaskMapper.toDto(task);
         }
     }
 
     @Override
-    public TaskDto getTaskById(Long id) {
+    public TaskResponseDto getTaskById(Long id) {
+        if (!taskRepository.existsById(id)){
+            throw new TaskNotFoundException("Task not found !!");
+        }
         return TaskMapper.toDto(taskRepository.findById(id).get());
     }
 
@@ -70,7 +72,7 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public TaskDto updateTaskStatus(Long id, TaskStatus status) {
+    public TaskResponseDto updateTaskStatus(Long id, TaskStatus status) {
         if (!taskRepository.existsById(id)){
             throw new TaskNotFoundException("Task not found !!");
         }
@@ -81,7 +83,7 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public TaskDto updateTask(Long id, TaskUpdateDto taskUpdateDto) {
+    public TaskResponseDto updateTask(Long id, TaskUpdateDto taskUpdateDto) {
         if (!taskRepository.existsById(id)){
             throw new TaskNotFoundException("Task not found !!");
         }
@@ -94,7 +96,7 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public Page<TaskDto> getAllTasks(TaskStatus status, Pageable pageable) {
+    public Page<TaskResponseDto> getAllTasks(TaskStatus status, Pageable pageable) {
         if (status == null){
             return taskRepository.findAll(pageable).map(TaskMapper::toDto);
         }
@@ -103,14 +105,17 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public Page<TaskDto> getTasksByUser(Long user_id, TaskStatus status, Pageable pageable) {
+    public Page<TaskResponseDto> getTasksByUser(Long user_id, TaskStatus status, Pageable pageable) {
         userRepository.findById(user_id)
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
+        if (status == null){
+            return taskRepository.findByUserId(user_id,pageable).map(TaskMapper::toDto);
+        }
         return taskRepository.findByUserIdAndStatus(user_id,status,pageable).map(TaskMapper::toDto);
     }
 
     @Override
-    public Page<TaskDto> getTasks(Long user_id, TaskStatus status, String title, Pageable pageable) {
+    public Page<TaskResponseDto> getTasks(Long user_id, TaskStatus status, String title, Pageable pageable) {
 
         if (user_id != null){
             userRepository.findById(user_id)

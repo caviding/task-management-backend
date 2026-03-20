@@ -1,9 +1,9 @@
 package com.example.service.impl;
 
 import java.util.Optional;
-import com.example.dto.UserDto;
+import com.example.dto.response.UserResponseDto;
 import com.example.entity.User;
-import com.example.dto.UserDtoUI;
+import com.example.dto.request.UserRequestDto;
 import com.example.mapper.UserMapper;
 import com.example.service.IUserService;
 import com.example.repository.UserRepository;
@@ -19,14 +19,14 @@ public class UserServiceImpl implements IUserService {
     private UserRepository userRepository;
 
     @Override
-    public UserDto createUser(UserDtoUI userDtoUI) {
-        User user = UserMapper.toEntity(userDtoUI);
+    public UserResponseDto createUser(UserRequestDto userRequestDto) {
+        User user = UserMapper.toEntity(userRequestDto);
         userRepository.save(user);
         return UserMapper.toDto(user);
     }
 
     @Override
-    public UserDto getUserById(Long id) {
+    public UserResponseDto getUserById(Long id) {
         Optional<User> optional = userRepository.findById(id);
         if (optional.isEmpty()){
             throw new UserNotFoundException("User not found !!");
@@ -35,11 +35,11 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserDto updateUser(Long id, UserDtoUI userDtoUI) {
+    public UserResponseDto updateUser(Long id, UserRequestDto userRequestDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
-        user.setUsername(userDtoUI.getUsername());
-        user.setEmail(userDtoUI.getEmail());
+        user.setUsername(userRequestDto.getUsername());
+        user.setEmail(userRequestDto.getEmail());
         return UserMapper.toDto(userRepository.save(user));
     }
 }

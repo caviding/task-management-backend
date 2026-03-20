@@ -1,4 +1,4 @@
-package com.example.dto;
+package com.example.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-public class UserDto {
+public class UserResponseDto {
 
     private Long id;
 
@@ -18,5 +18,5 @@ public class UserDto {
 
     private String email;
 
-    private List<TaskDto> tasks;
+    private List<TaskResponseDto> tasks;
 }

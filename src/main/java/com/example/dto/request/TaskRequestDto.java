@@ -1,4 +1,4 @@
-package com.example.dto;
+package com.example.dto.request;
 
 import lombok.Data;
 import com.example.Enum.TaskStatus;
@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
 
 @Data
-public class TaskDtoUI {
+public class TaskRequestDto {
 
     @NotNull(message = "Title cannot be null")
     @NotEmpty(message = "Title cannot be empty")

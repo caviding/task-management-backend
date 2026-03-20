@@ -1,4 +1,4 @@
-package com.example.dto;
+package com.example.dto.request;
 
 import lombok.Data;
 import jakarta.validation.constraints.Size;
@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
 
 @Data
-public class UserDtoUI {
+public class UserRequestDto {
 
     @NotNull(message = "Username cannot be null")
     @NotEmpty(message = "Username cannot be empty")
