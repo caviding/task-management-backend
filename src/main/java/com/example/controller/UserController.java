@@ -23,7 +23,7 @@ public class UserController {
         return RootEntity.success(userService.createUser(userRequestDto), HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/users/{id}")
     public RootEntity<UserResponseDto> getUserById(@PathVariable @Positive(message = "Id cannot be negative !1") Long id) {
         return RootEntity.success(userService.getUserById(id),HttpStatus.OK);
     }

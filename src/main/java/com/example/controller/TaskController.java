@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import com.example.dto.request.TaskUpdateDto;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 

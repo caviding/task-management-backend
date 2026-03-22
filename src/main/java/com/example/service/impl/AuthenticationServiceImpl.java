@@ -5,6 +5,7 @@ import com.example.dto.request.LoginRequest;
 import com.example.dto.request.RegisterRequest;
 import com.example.entity.User2;
 import com.example.exception.UserAlreadyExistsException;
+import com.example.exception.UserNotFoundException;
 import com.example.repository.UserRepository2;
 import com.example.security.CustomUserDetailsService;
 import com.example.service.IAuthenticationService;
@@ -47,9 +48,8 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
                 return "Login successful !!";
             }
             else {
-                return "Password is incorrect !!";
+                throw new UserNotFoundException("Password is incorrect !!");
             }
-
         }
         catch (UsernameNotFoundException exception){
             return "Username is incorrect !!";

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import com.example.dto.request.TaskUpdateDto;
 import com.example.repository.UserRepository;
 import com.example.repository.TaskRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 import com.example.exception.UserNotFoundException;
@@ -44,6 +45,7 @@ public class TaskServiceImpl implements ITaskService {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public TaskResponseDto getTaskById(Long id) {
         if (!taskRepository.existsById(id)){
@@ -95,6 +97,7 @@ public class TaskServiceImpl implements ITaskService {
         return TaskMapper.toDto(task);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Page<TaskResponseDto> getAllTasks(TaskStatus status, Pageable pageable) {
         if (status == null){
@@ -104,6 +107,7 @@ public class TaskServiceImpl implements ITaskService {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Page<TaskResponseDto> getTasksByUser(Long user_id, TaskStatus status, Pageable pageable) {
         userRepository.findById(user_id)
@@ -114,6 +118,7 @@ public class TaskServiceImpl implements ITaskService {
         return taskRepository.findByUserIdAndStatus(user_id,status,pageable).map(TaskMapper::toDto);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Page<TaskResponseDto> getTasks(Long user_id, TaskStatus status, String title, Pageable pageable) {
 
