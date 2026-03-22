@@ -8,6 +8,7 @@ import com.example.mapper.TaskMapper;
 import com.example.service.ITaskService;
 import com.example.dto.response.TaskResponseDto;
 import com.example.dto.request.TaskRequestDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import com.example.dto.request.TaskUpdateDto;
 import com.example.repository.UserRepository;
@@ -20,16 +21,13 @@ import com.example.exception.TaskNotFoundException;
 import com.example.specifications.TaskSpecification;
 import com.example.exception.TaskUserMismatchException;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
+@RequiredArgsConstructor
 public class TaskServiceImpl implements ITaskService {
 
-    @Autowired
-    private TaskRepository taskRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
 
     @Override
     public TaskResponseDto createTask(TaskRequestDto taskRequestDto) {

@@ -7,16 +7,15 @@ import com.example.dto.request.UserRequestDto;
 import com.example.mapper.UserMapper;
 import com.example.service.IUserService;
 import com.example.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.example.exception.UserNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements IUserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
