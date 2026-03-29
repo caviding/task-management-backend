@@ -44,7 +44,7 @@ public class TaskController {
 
     @PutMapping({"/updateStatus/{id}","/updateStatus/{id}/"})
     public RootEntity<TaskResponseDto> updateTaskStatus(@PathVariable @Positive(message = "Id cannot be negative !!") Long id,
-                                                        @RequestParam(name = "status") @NotEmpty(message = "Status cannot be empty !!") TaskStatus status) {
+                                                        @RequestParam(name = "status") TaskStatus status) {
         return RootEntity.success(taskService.updateTaskStatus(id,status),HttpStatus.OK);
     }
 
@@ -88,6 +88,4 @@ public class TaskController {
         Page<TaskResponseDto> page = taskService.getTasks(user_id,status,title,pageable);
         return RootEntity.success(page,HttpStatus.OK);
     }
-
-
 }

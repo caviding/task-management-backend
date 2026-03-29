@@ -33,7 +33,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
             User2 user = User2.builder()
                     .username(registerRequest.getUsername())
                     .password(passwordEncoder.encode(registerRequest.getPassword()))
-                    .role(Role.ROLE_USER)
+                    .role(Role.USER)
                     .build();
             userRepository.save(user);
             return user;
@@ -52,7 +52,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
             }
         }
         catch (UsernameNotFoundException exception){
-            return "Username is incorrect !!";
+            throw new UserNotFoundException("Username is incorrect !!") ;
         }
     }
 
