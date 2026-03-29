@@ -28,11 +28,11 @@ public class JWTService {
 
     public boolean isTokenValid(String token, UserDetails userDetails){
         String userName = extractUserName(token);
-        Date expirationDate = extractExpirtaion(token);
+        Date expirationDate = extractExpiration(token);
         return userName.equals(userDetails.getUsername()) && expirationDate.after(new Date());
     }
 
-    private String extractUserName(String token){
+    public String extractUserName(String token){
         return extractAllClaims(token).getSubject();
     }
 
@@ -45,7 +45,7 @@ public class JWTService {
                 .getBody();
     }
 
-    private Date extractExpirtaion(String token){
+    private Date extractExpiration(String token){
         return extractAllClaims(token).getExpiration();
     }
 
