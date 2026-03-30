@@ -2,8 +2,8 @@ package com.example.controller;
 
 import com.example.dto.request.LoginRequest;
 import com.example.dto.request.RegisterRequest;
+import com.example.dto.response.AuthenticationResponse;
 import com.example.entity.RootEntity;
-import com.example.entity.User2;
 import com.example.service.impl.AuthenticationServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +23,12 @@ public class AuthenticationController {
     private final AuthenticationServiceImpl authenticationService;
 
     @PostMapping("/register")
-    public RootEntity<User2> register(@RequestBody @Valid RegisterRequest registerRequest){
+    public RootEntity<AuthenticationResponse> register(@RequestBody @Valid RegisterRequest registerRequest){
         return RootEntity.success(authenticationService.register(registerRequest), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public RootEntity<String> login(@RequestBody @Valid LoginRequest loginRequest){
+    public RootEntity<AuthenticationResponse> login(@RequestBody @Valid LoginRequest loginRequest){
         return RootEntity.success(authenticationService.login(loginRequest), HttpStatus.OK);
     }
 }

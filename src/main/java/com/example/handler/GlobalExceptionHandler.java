@@ -10,6 +10,7 @@ import com.example.exception.UserNotFoundException;
 import com.example.exception.TaskNotFoundException;
 import com.example.exception.TaskUserMismatchException;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import javax.naming.AuthenticationException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,6 +31,20 @@ public class GlobalExceptionHandler {
         apiError.setErrorMessages(message);
         apiError.setPath(request.getDescription(false).substring(4));
         return apiError;
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public RootEntity<ApiError> handleBadCredentialsException(BadCredentialsException ex, WebRequest request){
+        return RootEntity.error(createApiError(ex.getMessage(),request),HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public RootEntity<ApiError> handleAuthenticationException(AuthenticationException ex, WebRequest request){
+        return RootEntity.error(createApiError(ex.getMessage(),request),HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -22,7 +22,6 @@ public class JWTService {
 
     public String generateToken(String userName){
         Map<String, Object> claims = new HashMap<>();
-        claims.put("cavid", "balakisiyev");
         return generateToken(claims, userName);
     }
 
@@ -63,8 +62,4 @@ public class JWTService {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
-
-
-
-
 }
