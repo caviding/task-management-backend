@@ -1,6 +1,7 @@
 package com.example.service.impl;
 
 import java.util.List;
+
 import com.example.entity.User;
 import com.example.entity.Task;
 import com.example.Enum.TaskStatus;
@@ -13,7 +14,7 @@ import org.springframework.data.domain.Page;
 import com.example.dto.request.TaskUpdateDto;
 import com.example.repository.UserRepository;
 import com.example.repository.TaskRepository;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 import com.example.exception.UserNotFoundException;
@@ -31,19 +32,21 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskResponseDto createTask(TaskRequestDto taskRequestDto) {
-        if (!userRepository.existsById(taskRequestDto.getUserId())){
-            throw new UserNotFoundException("User not found !!");
-        }else {
             Task task = TaskMapper.toEntity(taskRequestDto);
-            List<Task> taskList = userRepository.findById(taskRequestDto.getUserId()).get().getTasks();
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+            User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found !!"));
+
+            task.setUserId(userRepository.findByUsername(username).get().getId());
+            List<Task> taskList = userRepository.findByUsername(username).get().getTasks();
             taskList.add(task);
-            userRepository.findById(taskRequestDto.getUserId()).get().setTasks(taskList);
+            user.setTasks(taskList);
+            userRepository.save(user);
             taskRepository.save(task);
             return TaskMapper.toDto(task);
-        }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public TaskResponseDto getTaskById(Long id) {
         if (!taskRepository.existsById(id)){
@@ -53,22 +56,32 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public void deleteTaskById(Long user_id,Long task_id) {
-        User user = userRepository.findById(user_id)
+    public void deleteTaskById(Long id) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user =userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
 
-        Task task = taskRepository.findById(task_id)
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found !!"));
 
-        if (!user.getTasks().contains(task)) {
+        if (user.getTasks().contains(task)){
+            taskRepository.delete(task);
+            user.getTasks().remove(task);
+            userRepository.save(user);
+        }else {
             throw new TaskUserMismatchException("This task is not assigned to this user !!");
         }
-        else {
-            List<Task> taskList = userRepository.findById(user_id).get().getTasks();
-            taskList.remove(taskRepository.findById(task_id).get());
-            userRepository.findById(user_id).get().setTasks(taskList);
-            taskRepository.deleteById(task_id);
-        }
+    }
+
+    @Override
+    public boolean isOwner(String username, Long id) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found !!"));
+
+        Task task = taskRepository.findById(id)
+                        .orElseThrow(() -> new TaskNotFoundException("Task not found !!"));
+
+        return user.getTasks().contains(task);
     }
 
     @Override
@@ -95,17 +108,14 @@ public class TaskServiceImpl implements ITaskService {
         return TaskMapper.toDto(task);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Page<TaskResponseDto> getAllTasks(TaskStatus status, Pageable pageable) {
         if (status == null){
             return taskRepository.findAll(pageable).map(TaskMapper::toDto);
         }
         return taskRepository.findByStatus(status,pageable).map(TaskMapper::toDto);
-
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Page<TaskResponseDto> getTasksByUser(Long user_id, TaskStatus status, Pageable pageable) {
         userRepository.findById(user_id)
@@ -116,7 +126,6 @@ public class TaskServiceImpl implements ITaskService {
         return taskRepository.findByUserIdAndStatus(user_id,status,pageable).map(TaskMapper::toDto);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Page<TaskResponseDto> getTasks(Long user_id, TaskStatus status, String title, Pageable pageable) {
 

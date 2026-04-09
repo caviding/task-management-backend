@@ -10,7 +10,8 @@ import org.springframework.data.domain.Pageable;
 public interface ITaskService {
      TaskResponseDto createTask(TaskRequestDto taskRequestDto);
      TaskResponseDto getTaskById(Long id);
-     void deleteTaskById(Long user_id, Long task_id);
+     void deleteTaskById(Long id);
+     boolean isOwner(String username,Long id);
      TaskResponseDto updateTaskStatus(Long id, TaskStatus status);
      TaskResponseDto updateTask(Long id, TaskUpdateDto taskUpdateDto);
      Page<TaskResponseDto> getAllTasks(TaskStatus status, Pageable pageable);

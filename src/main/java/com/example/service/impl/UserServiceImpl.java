@@ -1,13 +1,23 @@
 package com.example.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import com.example.Enum.TaskStatus;
+import com.example.dto.request.RegisterRequest;
 import com.example.dto.response.UserResponseDto;
 import com.example.entity.User;
 import com.example.dto.request.UserRequestDto;
+import com.example.mapper.TaskMapper;
 import com.example.mapper.UserMapper;
 import com.example.service.IUserService;
 import com.example.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.exception.UserNotFoundException;
 
@@ -18,10 +28,27 @@ public class UserServiceImpl implements IUserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserResponseDto createUser(UserRequestDto userRequestDto) {
-        User user = UserMapper.toEntity(userRequestDto);
-        userRepository.save(user);
-        return UserMapper.toDto(user);
+    public Page<UserResponseDto> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(UserMapper::toDto);
+    }
+
+    @Override
+    public UserResponseDto getProfile() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (username == null) {
+            throw new UserNotFoundException("User not found !!");
+        }
+        return UserMapper.toDto(userRepository.findByUsername(username).get());
+    }
+
+    @Override
+    public boolean isOwner(Long userId, String username) {
+        return userRepository.existsByIdAndUsername(userId, username);
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 
     @Override

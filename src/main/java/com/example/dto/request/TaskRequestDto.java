@@ -20,11 +20,7 @@ public class TaskRequestDto {
     @Size(min = 10, max = 255, message = "Description must be between 10 and 255 characters")
     private String description;
 
-    @NotNull(message = "Status boş ola bilməz")
+    @NotNull(message = "Status cannot be null")
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
-
-    @NotNull(message = "User id cannot be null")
-    private Long userId;
-
 }

@@ -11,14 +11,13 @@ import org.springframework.data.domain.*;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import com.example.dto.request.TaskUpdateDto;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 
 @RestController
-@RequestMapping("api/v1/task")
+@RequestMapping("api/v1/tasks")
 @Validated
 @RequiredArgsConstructor
 public class TaskController {
@@ -26,20 +25,22 @@ public class TaskController {
     private final ITaskService taskService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public RootEntity<TaskResponseDto> createTask(@RequestBody @Valid TaskRequestDto taskRequestDto) {
         return RootEntity.success(taskService.createTask(taskRequestDto), HttpStatus.CREATED);
     }
 
-    @GetMapping("/tasks/{id}")
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @taskServiceImpl.isOwner(#id, authentication.name)")
     public RootEntity<TaskResponseDto> getTaskById(@PathVariable @Positive(message = "Id cannot be negative !!") Long id) {
         return RootEntity.success(taskService.getTaskById(id),HttpStatus.OK);
     }
 
-    @DeleteMapping({"/delete","/delete/"})
-    public RootEntity<Void> deleteTaskById(@RequestParam(name = "userId") @Positive(message = "UserId cannot be negative !!") Long user_id,
-                                               @RequestParam(name = "taskId") @Positive(message = "TaskId cannot be negative !!") Long task_id) {
-        taskService.deleteTaskById(user_id,task_id);
-        return RootEntity.success(null,HttpStatus.OK);
+    @DeleteMapping({"/{id}"})
+    @PreAuthorize("hasRole('ADMIN') or @taskServiceImpl.isOwner(#id, authentication.name)")
+    public RootEntity<?> deleteTaskById(@PathVariable(name = "id") @Positive(message = "TaskId cannot be negative !!") Long id) {
+        taskService.deleteTaskById(id);
+        return RootEntity.success("Task deleted successfully !!",HttpStatus.NO_CONTENT);
     }
 
     @PutMapping({"/updateStatus/{id}","/updateStatus/{id}/"})
@@ -55,6 +56,7 @@ public class TaskController {
     }
 
     @GetMapping({"/list","/list/"})
+    @PreAuthorize("hasRole('ADMIN')")
     public RootEntity<Page<TaskResponseDto>> getAllTasks(@RequestParam(name = "status",required = false) TaskStatus status,
                                                          @RequestParam(name = "pageNumber",defaultValue = "0") @Min(value = 0,message = "Page number cannot be negative !!") int pageNumber,
                                                          @RequestParam(name = "pageSize",defaultValue = "5") @Min(value = 1,message = "Page size cannot be lower than 1 !!") int pageSize,
@@ -66,6 +68,7 @@ public class TaskController {
     }
 
     @GetMapping({"/user-tasks/{user_id}/","/user-tasks/{user_id}"})
+    @PreAuthorize("hasRole('ADMIN')")
     public RootEntity<Page<TaskResponseDto>> getTasksByUser(@PathVariable(name = "user_id") @Positive(message = "Id cannot be negative !!") Long user_id,
                                                             @RequestParam(name = "status", required = false) TaskStatus status,
                                                             @RequestParam(name = "pageNumber",defaultValue = "0") @Min(value = 0,message = "Page number cannot be negative !!") int pageNumber,
@@ -78,6 +81,7 @@ public class TaskController {
     }
 
     @GetMapping({"/search","/search/"})
+    @PreAuthorize("hasRole('ADMIN')")
     public RootEntity<Page<TaskResponseDto>> getTasks(@RequestParam(name = "user_id",required = false) @Positive(message = "Id cannot be negative !!") Long user_id,
                                                       @RequestParam(name = "status",required = false) TaskStatus status,
                                                       @RequestParam(name = "title",required = false) String title,

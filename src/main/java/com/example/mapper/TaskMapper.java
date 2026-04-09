@@ -20,7 +20,6 @@ public class TaskMapper {
         task.setTitle(taskRequestDto.getTitle());
         task.setDescription(taskRequestDto.getDescription());
         task.setStatus(taskRequestDto.getStatus());
-        task.setUserId(taskRequestDto.getUserId());
         return task;
     }
 }

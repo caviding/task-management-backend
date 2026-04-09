@@ -2,9 +2,7 @@ package com.example.config;
 
 import com.example.Enum.Role;
 import com.example.security.JWTAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import com.example.security.CustomUserDetailsService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -29,10 +27,10 @@ public class SecurityConfig {
     }
 
     private static final String[] ADMIN_LIST_URL = {
-            "/api/v1/task/tasks/**",
-            "/api/v1/task/list",
-            "/api/v1/task/user-tasks/**",
-            "/api/v1/task/search"
+            "/api/v1/tasks/list",
+            "/api/v1/tasks/user-tasks/**",
+            "/api/v1/tasks/search",
+            "/api/v1/users"
     };
 
     @Bean
