@@ -6,7 +6,6 @@ import com.example.entity.RootEntity;
 import com.example.service.ITaskService;
 import com.example.dto.response.TaskResponseDto;
 import com.example.dto.request.TaskRequestDto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
@@ -19,15 +18,24 @@ import org.springframework.validation.annotation.Validated;
 @RestController
 @RequestMapping("api/v1/tasks")
 @Validated
-@RequiredArgsConstructor
 public class TaskController {
 
     private final ITaskService taskService;
 
-    @PostMapping("/create")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public TaskController(ITaskService taskService) {
+        this.taskService = taskService;
+    }
+
+    @PostMapping
     public RootEntity<TaskResponseDto> createTask(@RequestBody @Valid TaskRequestDto taskRequestDto) {
         return RootEntity.success(taskService.createTask(taskRequestDto), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/admin/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public RootEntity<TaskResponseDto> createTaskById(@PathVariable @Positive(message = "Id cannot be negative !!") Long userId,
+                                                    @RequestBody @Valid TaskRequestDto taskRequestDto) {
+        return RootEntity.success(taskService.createTaskById(userId, taskRequestDto), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -38,21 +46,32 @@ public class TaskController {
 
     @DeleteMapping({"/{id}"})
     @PreAuthorize("hasRole('ADMIN') or @taskServiceImpl.isOwner(#id, authentication.name)")
-    public RootEntity<?> deleteTaskById(@PathVariable(name = "id") @Positive(message = "TaskId cannot be negative !!") Long id) {
-        taskService.deleteTaskById(id);
-        return RootEntity.success("Task deleted successfully !!",HttpStatus.NO_CONTENT);
+    public RootEntity<Void> deleteTask(@PathVariable(name = "id") @Positive(message = "TaskId cannot be negative !!") Long id) {
+        taskService.deleteTask(id);
+        return RootEntity.success(null,HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping({"/updateStatus/{id}","/updateStatus/{id}/"})
+    @PatchMapping({"/{id}/status","/{id}/status"})
+    @PreAuthorize("hasRole('ADMIN') or @taskServiceImpl.isOwner(#id, authentication.name)")
     public RootEntity<TaskResponseDto> updateTaskStatus(@PathVariable @Positive(message = "Id cannot be negative !!") Long id,
                                                         @RequestParam(name = "status") TaskStatus status) {
         return RootEntity.success(taskService.updateTaskStatus(id,status),HttpStatus.OK);
     }
 
-    @PutMapping({"/update/{id}","/update/{id}/"})
+    @PutMapping({"/{id}","/{id}/"})
+    @PreAuthorize("hasRole('ADMIN') or @taskServiceImpl.isOwner(#id, authentication.name)")
     public RootEntity<TaskResponseDto> updateTask(@PathVariable @Positive(message = "Id cannot be negative !!") Long id,
                                                   @RequestBody @Valid TaskUpdateDto taskUpdateDto) {
         return RootEntity.success(taskService.updateTask(id,taskUpdateDto),HttpStatus.OK);
+    }
+
+    @GetMapping("/my-tasks")
+    public RootEntity<Page<TaskResponseDto>> getMyTasks(@RequestParam(name = "pageNumber",defaultValue = "0") @Min(value = 0,message = "Page number cannot be negative !!") int pageNumber,
+                                                        @RequestParam(name = "pageSize",defaultValue = "5") @Min(value = 1,message = "Page size cannot be lower than 1 !!") int pageSize) {
+        Sort.Order order = Sort.Order.asc("id");
+        Pageable pageable = PageRequest.of(pageNumber,pageSize, Sort.by(order));
+        Page<TaskResponseDto> page = taskService.getMyTasks(pageable);
+        return RootEntity.success(page,HttpStatus.OK);
     }
 
     @GetMapping({"/list","/list/"})

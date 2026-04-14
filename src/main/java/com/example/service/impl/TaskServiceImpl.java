@@ -39,12 +39,28 @@ public class TaskServiceImpl implements ITaskService {
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
 
             task.setUserId(userRepository.findByUsername(username).get().getId());
-            List<Task> taskList = userRepository.findByUsername(username).get().getTasks();
-            taskList.add(task);
-            user.setTasks(taskList);
+            user.getTasks().add(task);
             userRepository.save(user);
-            taskRepository.save(task);
-            return TaskMapper.toDto(task);
+
+            Task savedTask = taskRepository.findByTitleAndUserId(task.getTitle(), user.getId())
+                    .orElseThrow(() -> new TaskNotFoundException("Task not found !!"));
+
+//            taskRepository.save(task);
+            return TaskMapper.toDto(savedTask);
+    }
+
+    @Override
+    public TaskResponseDto createTaskById(Long userId, TaskRequestDto taskRequestDto) {
+        Task task = TaskMapper.toEntity(taskRequestDto);
+        task.setId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found !!"));
+        List<Task> list = user.getTasks();
+        list.add(task);
+        user.setTasks(list);
+        userRepository.save(user);
+        taskRepository.save(task);
+        return TaskMapper.toDto(task);
     }
 
     @Override
@@ -56,7 +72,7 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public void deleteTaskById(Long id) {
+    public void deleteTask(Long id) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user =userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
@@ -74,7 +90,7 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public boolean isOwner(String username, Long id) {
+    public boolean isOwner(Long id, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found !!"));
 
@@ -86,10 +102,8 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskResponseDto updateTaskStatus(Long id, TaskStatus status) {
-        if (!taskRepository.existsById(id)){
-            throw new TaskNotFoundException("Task not found !!");
-        }
-        Task task = taskRepository.findById(id).get();
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found !!"));
         task.setStatus(status);
         taskRepository.save(task);
         return TaskMapper.toDto(task);
@@ -106,6 +120,14 @@ public class TaskServiceImpl implements ITaskService {
         task.setStatus(taskUpdateDto.getStatus());
         taskRepository.save(task);
         return TaskMapper.toDto(task);
+    }
+
+    @Override
+    public Page<TaskResponseDto> getMyTasks(Pageable pageable) {
+
+        User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found !!"));
+        return taskRepository.findByUserId(user.getId(),pageable).map(TaskMapper::toDto);
     }
 
     @Override

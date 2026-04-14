@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.Enum.Role;
 import com.example.Enum.TaskStatus;
 import com.example.dto.request.RegisterRequest;
 import com.example.dto.response.UserResponseDto;
@@ -26,6 +27,17 @@ import com.example.exception.UserNotFoundException;
 public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public UserResponseDto createUser(RegisterRequest registerRequest, Role role) {
+
+        User user = UserMapper.toEntity(registerRequest);
+        user.setRole(role);
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+
+        return UserMapper.toDto(userRepository.save(user));
+    }
 
     @Override
     public Page<UserResponseDto> getAllUsers(Pageable pageable) {

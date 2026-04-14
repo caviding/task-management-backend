@@ -1,8 +1,7 @@
 package com.example.controller;
 
+import com.example.Enum.Role;
 import com.example.dto.request.RegisterRequest;
-import com.example.dto.response.AuthenticationResponse;
-import com.example.service.IAuthenticationService;
 import jakarta.validation.Valid;
 import com.example.entity.RootEntity;
 import com.example.dto.response.UserResponseDto;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final IUserService userService;
-    private final IAuthenticationService authService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -39,31 +37,31 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public RootEntity<UserResponseDto> getProfile() {
         return RootEntity.success(userService.getProfile(), HttpStatus.OK);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public RootEntity<AuthenticationResponse> createUser(@RequestBody @Valid RegisterRequest registerRequest) {
-        return RootEntity.success(authService.register(registerRequest), HttpStatus.CREATED);
+    public RootEntity<UserResponseDto> createUser(@RequestBody @Valid RegisterRequest registerRequest,
+                                                         @RequestParam(name = "role",defaultValue = "USER") Role role) {
+        return RootEntity.success(userService.createUser(registerRequest, role), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @userServiceImpl.isOwner(#id, authentication.name)")
-    public RootEntity<?> deleteUser(@PathVariable @Positive(message = "Id cannot be negative !1") Long id) {
+    public RootEntity<Void> deleteUser(@PathVariable @Positive(message = "Id cannot be negative !1") Long id) {
         userService.deleteUser(id);
-        return RootEntity.success("User deleted successfully", HttpStatus.NO_CONTENT);
+        return RootEntity.success(null, HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @userServiceImpl.isOwner(#id, authentication.name)")
     public RootEntity<UserResponseDto> getUserById(@PathVariable @Positive(message = "Id cannot be negative !1") Long id) {
         return RootEntity.success(userService.getUserById(id),HttpStatus.OK);
     }
 
-    @PutMapping({"/update/{id}","/update/{id}/"})
+    @PutMapping({"/{id}","/{id}/"})
     @PreAuthorize("hasRole('ADMIN') or @userServiceImpl.isOwner(#id, authentication.name)")
     public RootEntity<UserResponseDto> updateUser(@PathVariable @Positive(message = "Id cannot be negative !1") Long id,
                                                   @RequestBody @Valid UserRequestDto userRequestDto) {

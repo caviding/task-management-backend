@@ -26,13 +26,6 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    private static final String[] ADMIN_LIST_URL = {
-            "/api/v1/tasks/list",
-            "/api/v1/tasks/user-tasks/**",
-            "/api/v1/tasks/search",
-            "/api/v1/users"
-    };
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -40,7 +33,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth ->
                         auth
-                                .requestMatchers(ADMIN_LIST_URL).hasAnyRole(Role.ADMIN.name())
                                 .requestMatchers("/api/v1/auth/**").permitAll()
                                 .anyRequest().authenticated())
                 .sessionManagement(x -> x.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
