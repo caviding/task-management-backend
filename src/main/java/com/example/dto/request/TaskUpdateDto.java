@@ -1,4 +1,4 @@
-package com.example.dto;
+package com.example.dto.request;
 
 import com.example.Enum.TaskStatus;
 import jakarta.persistence.EnumType;

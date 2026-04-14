@@ -1,4 +1,4 @@
-package com.example.dto;
+package com.example.dto.response;
 
 import com.example.Enum.TaskStatus;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TaskDto {
+public class TaskResponseDto {
 
     private Long id;
 
